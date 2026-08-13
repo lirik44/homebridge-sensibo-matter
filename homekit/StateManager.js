@@ -1,6 +1,7 @@
 let Characteristic
 let log
 let MINIMUM_NODE
+let platformRef
 
 function characteristicToMode(characteristic) {
 	// log.easyDebug(`characteristicToMode - characteristic: ${characteristic}`)
@@ -72,6 +73,31 @@ function updateClimateReact(device, enableClimateReactAutoSetup) {
 		smartModeState.highTemperatureState.on = false
 		smartModeState.lowTemperatureThreshold = device.state.targetTemperature - (device.usesFahrenheit ? 1.8 : 1)
 		smartModeState.lowTemperatureState.on = true
+	} else if (device.state.mode === 'AUTO' && platformRef?.climateReactAutoAsAuto) {
+		// HomeKit AUTO exposes two setpoints (a range). We map them directly onto Climate
+		// React's low/high thresholds so CR - not the AC's native AUTO - drives on/off cycling.
+		// The two setpoints live on the HeaterCooler characteristics, so read them from there.
+		const svc = device.HeaterCoolerService
+		const highSetpoint = svc.getCharacteristic(Characteristic.CoolingThresholdTemperature).value // top of the band
+		const lowSetpoint = svc.getCharacteristic(Characteristic.HeatingThresholdTemperature).value // bottom of the band
+		const changeover = !!platformRef?.climateReactAutoChangeover
+
+		// Upper edge: start cooling
+		smartModeState.highTemperatureThreshold = highSetpoint
+		smartModeState.highTemperatureState.on = true
+		smartModeState.highTemperatureState.mode = 'cool'
+		smartModeState.highTemperatureState.targetTemperature = highSetpoint
+
+		// Lower edge: either stop the unit (cooling band, default) or start heating (full changeover)
+		smartModeState.lowTemperatureThreshold = lowSetpoint
+		smartModeState.lowTemperatureState.on = changeover
+		smartModeState.lowTemperatureState.mode = changeover ? 'heat' : 'cool'
+		smartModeState.lowTemperatureState.targetTemperature = lowSetpoint
+
+		// In AUTO the plugin owns whether Climate React is on: enabled iff the accessory is active.
+		smartModeState.enabled = device.state.active
+
+		log.easyDebug(`${device.name} updateClimateReact (AUTO) - band [${lowSetpoint}, ${highSetpoint}], changeover: ${changeover}, enabled: ${smartModeState.enabled}`)
 	}
 
 	if ('fanSpeeds' in device.capabilities[device.state.mode] && 'fanSpeed' in device.state) {
@@ -112,8 +138,9 @@ export default (device, platform) => {
 	Characteristic = platform.api.hap.Characteristic
 	log = platform.log
 	MINIMUM_NODE = platform.MINIMUM_NODE
+	platformRef = platform
 
-	const enableClimateReactAutoSetup = platform.enableClimateReactAutoSetup
+	const enableClimateReactAutoSetup = platform.enableClimateReactAutoSetup || platform.climateReactAutoAsAuto
 
 	return {
 

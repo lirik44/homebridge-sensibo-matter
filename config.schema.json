@@ -164,6 +164,20 @@
                 "default": false,
                 "required": false
             },
+            "climateReactAutoAsAuto": {
+                "title": "Drive HomeKit AUTO via Climate React",
+                "description": "When enabled, the HomeKit AUTO mode is driven by Climate React (Smart mode) using the two AUTO setpoints as the low/high thresholds, instead of the AC's native AUTO. Requires Climate React to be set up in the Sensibo app.",
+                "type": "boolean",
+                "default": false,
+                "required": false
+            },
+            "climateReactAutoChangeover": {
+                "title": "AUTO full changeover (heat + cool)",
+                "description": "Only used when 'Drive HomeKit AUTO via Climate React' is enabled. When true the lower setpoint turns HEATING on (full heat/cool changeover); when false (default) the lower setpoint simply turns the unit off (cooling band).",
+                "type": "boolean",
+                "default": false,
+                "required": false
+            },
 			"enableHistoryStorage": {
 				"title": "Enable History Storage",
 				"description": "Record temperature & humidity measurements over time, viewable as History in the Eve app",

@@ -43,6 +43,7 @@ class AirConditioner {
 		this.disableVerticalSwing = platform.disableVerticalSwing
 		this.disableLightSwitch = platform.disableLightSwitch
 		this.climateReactSwitchInAccessory = platform.climateReactSwitchInAccessory
+		this.climateReactAutoAsAuto = platform.climateReactAutoAsAuto
 		this.syncButtonInAccessory = platform.syncButtonInAccessory
 
 		this.capabilities = this.Utils.airConditionerCapabilities(device.remoteCapabilities.modes)
@@ -271,11 +272,14 @@ class AirConditioner {
 				} else if (mode === 'HEAT') {
 					this.addCharacteristicToService('HeaterCooler', 'HeatingThresholdTemperature', modeProps, true, true, null)
 				} else if (mode === 'AUTO') {
-					if (!this.capabilities.COOL || this.modesToExclude.includes('COOL')) {
+					// When driving AUTO via Climate React we need BOTH setpoints present to form the
+					// range, regardless of whether COOL/HEAT are also exposed. Otherwise keep the
+					// original behaviour of only adding a threshold that COOL/HEAT didn't already add.
+					if (this.climateReactAutoAsAuto || !this.capabilities.COOL || this.modesToExclude.includes('COOL')) {
 						this.addCharacteristicToService('HeaterCooler', 'CoolingThresholdTemperature', modeProps, true, true, null)
 					}
 
-					if (!this.capabilities.HEAT || this.modesToExclude.includes('HEAT')) {
+					if (this.climateReactAutoAsAuto || !this.capabilities.HEAT || this.modesToExclude.includes('HEAT')) {
 						this.addCharacteristicToService('HeaterCooler', 'HeatingThresholdTemperature', modeProps, true, true, null)
 					}
 				}

@@ -2,22 +2,28 @@ function sensiboFormattedACState(device, state) {
 	device.log.easyDebug(`${device.name} -> sensiboFormattedACState start`)
 	// device.log.easyDebug(`${device.name} -> sensiboFormattedACState acState: ${JSON.stringify(acState, null, 4)}`)
 
+	// When driving HomeKit AUTO via Climate React, never send the AC's native "auto" mode
+	// (which keeps the fan running). Send a concrete "cool" command instead and let Climate
+	// React own the on/off cycling. Fall back to AUTO capabilities if COOL isn't available.
+	const sendAsCool = device.climateReactAutoAsAuto && state.mode === 'AUTO' && device.capabilities.COOL
+	const effectiveMode = sendAsCool ? 'COOL' : state.mode
+	const effectiveCaps = device.capabilities[effectiveMode]
 	const acState = {
 		on: state.active,
-		mode: state.mode.toLowerCase(),
+		mode: effectiveMode.toLowerCase(),
 		targetTemperature: device.usesFahrenheit ? device.Utils.toFahrenheit(state.targetTemperature) : state.targetTemperature,
 		temperatureUnit: device.temperatureUnit
 	}
-	const swingModes = device.Utils.sensiboFormattedSwingModes(device.capabilities[state.mode], state)
+	const swingModes = device.Utils.sensiboFormattedSwingModes(effectiveCaps, state)
 
 	// be mindful .assign() copies references (not a deep clone): https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign#examples
 	Object.assign(acState, swingModes)
 
-	if ('fanSpeeds' in device.capabilities[state.mode]) {
-		acState.fanLevel = device.Utils.percentToFanLevel(state.fanSpeed, device.capabilities[state.mode].fanSpeeds)
+	if ('fanSpeeds' in effectiveCaps) {
+		acState.fanLevel = device.Utils.percentToFanLevel(state.fanSpeed, effectiveCaps.fanSpeeds)
 	}
 
-	if ('light' in device.capabilities[state.mode]) {
+	if ('light' in effectiveCaps) {
 		acState.light = state.light ? 'on' : 'off'
 	}
 
