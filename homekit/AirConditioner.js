@@ -48,6 +48,13 @@ class AirConditioner {
 		this.climateReactAsAutoMode = platform.climateReactAsAutoMode
 		this.climateReactAutoLowOffset = platform.climateReactAutoLowOffset
 
+		// Climate React thresholds are triggers rather than AC setpoints, so the AUTO range can be finer
+		// than the whole degrees the AC accepts. Commands sent to the AC itself are rounded back to a
+		// supported value (see sensiboFormattedACState).
+		if (this.climateReactAsAutoMode && this.temperatureUnit !== FAHRENHEIT_UNIT) {
+			this.temperatureStep = platform.climateReactAutoTemperatureStep ?? 1
+		}
+
 		this.capabilities = this.Utils.airConditionerCapabilities(device.remoteCapabilities.modes)
 
 		// climateReactAsAutoMode: the HomeKit AUTO range lives here, not in state.targetTemperature

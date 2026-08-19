@@ -148,7 +148,7 @@ function updateClimateReactAutoMode(device) {
 		return
 	}
 
-	const step = device.usesFahrenheit ? 1.8 : 1
+	const step = device.usesFahrenheit ? 1.8 : (platformRef.climateReactAutoTemperatureStep ?? 1)
 	const offset = platformRef.climateReactAutoLowOffset ?? 0.2
 	const high = device.autoBand.high
 	let low = device.autoBand.low

@@ -79,6 +79,9 @@ class SensiboACPlatform {
 		// deliberately independent of the band: the band decides WHEN to run, this decides HOW hard.
 		this.climateReactAutoTargetTemperature = config['climateReactAutoTargetTemperature'] ?? 22
 		this.climateReactAutoFanLevel = config['climateReactAutoFanLevel'] ?? 'low'
+		// Step for the HomeKit AUTO range. Climate React thresholds are triggers, not AC setpoints, so
+		// they may be finer than the whole degrees the AC itself accepts.
+		this.climateReactAutoTemperatureStep = config['climateReactAutoTemperatureStep'] ?? 1
 		this.enableClimateReactSwitch = config['enableClimateReactSwitch'] || false
 		this.enableHistoryStorage = config['enableHistoryStorage'] || false
 		this.enableOccupancySensor = config['enableOccupancySensor'] || false
