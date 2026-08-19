@@ -158,6 +158,8 @@ See below the table for additional details on these settings.
 | `climateReactAutoTargetTemperature` |  The AC setpoint Climate React commands when it switches the unit on in AUTO. Clamped to what the AC supports. Only used when `climateReactAsAutoMode` is enabled  |          |  `22` |  Integer  |
 | `climateReactAutoFanLevel` |  The fan level Climate React commands when it switches the unit on in AUTO. Falls back to the current fan level if unsupported by the AC. Only used when `climateReactAsAutoMode` is enabled  |          |  `low` |  String  |
 | `climateReactAutoTemperatureStep` |  Step for the HomeKit AUTO range. `0.5` allows ranges like 23.5-24.5, since Climate React thresholds are triggers rather than AC setpoints. Commands sent to the AC are still rounded to a whole degree. Celsius only. Only used when `climateReactAsAutoMode` is enabled  |          |  `1` |  Number  |
+| `climateReactAutoMinTemperature` |  Narrows the bottom of the temperature slider in the Home app. Ignored if lower than the AC supports. Only used when `climateReactAsAutoMode` is enabled  |          |  -  |  Number  |
+| `climateReactAutoMaxTemperature` |  Narrows the top of the temperature slider in the Home app. Ignored if higher than the AC supports. Only used when `climateReactAsAutoMode` is enabled  |          |  -  |  Number  |
 | `climateReactAutoDebounceMs` |  How long to wait after the last change before sending the Climate React update, so dragging the AUTO range results in a single API call. Only used when `climateReactAsAutoMode` is enabled  |          |  `3000` |  Integer  |
 | `enableHistoryStorage`     |  When set to `true`, temperature & humidity measurements will be stored over time, viewable as History in the Eve app  |          |  `false` |   Boolean |
 | `enableOccupancySensor`    |  Adds an occupancy sensor to represent the state of someone at home  |          |  `false` |  Boolean  |
@@ -319,6 +321,13 @@ triggers rather than AC setpoints though, so they can be finer: setting `"climat
 a whole degree, so nothing invalid reaches the API. Celsius only.
 
 Bear in mind that a narrower band means the AC cycles more often.
+
+##### Narrowing the slider
+
+By default the slider spans everything the AC reports as supported, which is often wider than useful (15-30°C
+is common). `climateReactAutoMinTemperature` and `climateReactAutoMaxTemperature` narrow it - for example to
+18-28 - so there is less dragging to reach the temperatures you actually use. Values outside the AC's own
+capabilities are ignored.
 
 ##### Example config
 
