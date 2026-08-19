@@ -55,6 +55,9 @@ class AirConditioner {
 			this.temperatureStep = platform.climateReactAutoTemperatureStep ?? 1
 		}
 
+		this.climateReactAutoMinTemperature = platform.climateReactAutoMinTemperature
+		this.climateReactAutoMaxTemperature = platform.climateReactAutoMaxTemperature
+
 		this.capabilities = this.Utils.airConditionerCapabilities(device.remoteCapabilities.modes)
 
 		// climateReactAsAutoMode: the HomeKit AUTO range lives here, not in state.targetTemperature
@@ -282,6 +285,19 @@ class AirConditioner {
 						maxValue: this.Utils.toCelsius(this.capabilities[mode].temperatures[FAHRENHEIT_UNIT].max),
 						minStep: this.temperatureStep
 					}
+				}
+			}
+
+			// Optionally narrow the temperature slider. modeProps is only used for the threshold
+			// characteristics, so this affects the range shown in the Home app and nothing else. Values
+			// outside the AC's own capabilities are ignored, since the AC would reject them anyway.
+			if (modeProps && this.climateReactAsAutoMode) {
+				if (this.climateReactAutoMinTemperature !== null && this.climateReactAutoMinTemperature > modeProps.minValue) {
+					modeProps.minValue = this.climateReactAutoMinTemperature
+				}
+
+				if (this.climateReactAutoMaxTemperature !== null && this.climateReactAutoMaxTemperature < modeProps.maxValue) {
+					modeProps.maxValue = this.climateReactAutoMaxTemperature
 				}
 			}
 

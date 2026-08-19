@@ -205,6 +205,18 @@
                 ],
                 "required": false
             },
+            "climateReactAutoMinTemperature": {
+                "title": "AUTO: minimum selectable temperature (°C)",
+                "description": "Narrows the bottom of the temperature slider in the Home app, so you don't have to drag through temperatures you'd never use. Ignored if lower than what the AC supports. Only used when 'climateReactAsAutoMode' is enabled.",
+                "type": "number",
+                "required": false
+            },
+            "climateReactAutoMaxTemperature": {
+                "title": "AUTO: maximum selectable temperature (°C)",
+                "description": "Narrows the top of the temperature slider in the Home app. Ignored if higher than what the AC supports. Only used when 'climateReactAsAutoMode' is enabled.",
+                "type": "number",
+                "required": false
+            },
             "climateReactAutoDebounceMs": {
                 "title": "Climate React update debounce (ms)",
                 "description": "How long to wait after the last change before sending the Climate React update. Coalesces the burst of updates HomeKit sends when dragging the AUTO range, avoiding rate-limit (429) errors. Default 3000.",

@@ -82,6 +82,9 @@ class SensiboACPlatform {
 		// Step for the HomeKit AUTO range. Climate React thresholds are triggers, not AC setpoints, so
 		// they may be finer than the whole degrees the AC itself accepts.
 		this.climateReactAutoTemperatureStep = config['climateReactAutoTemperatureStep'] ?? 1
+		// Optional narrower bounds for the AUTO range, so the Home app slider isn't the AC's full span.
+		this.climateReactAutoMinTemperature = config['climateReactAutoMinTemperature'] ?? null
+		this.climateReactAutoMaxTemperature = config['climateReactAutoMaxTemperature'] ?? null
 		this.enableClimateReactSwitch = config['enableClimateReactSwitch'] || false
 		this.enableHistoryStorage = config['enableHistoryStorage'] || false
 		this.enableOccupancySensor = config['enableOccupancySensor'] || false
