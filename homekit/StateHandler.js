@@ -5,7 +5,9 @@ function sensiboFormattedACState(device, state) {
 	const acState = {
 		on: state.active,
 		mode: state.mode.toLowerCase(),
-		targetTemperature: device.usesFahrenheit ? device.Utils.toFahrenheit(state.targetTemperature) : state.targetTemperature,
+		// The AUTO range may use a finer step than the AC supports (Climate React thresholds are triggers,
+		// not setpoints), so round back to a whole degree here - Sensibo rejects fractional setpoints with 400.
+		targetTemperature: device.usesFahrenheit ? device.Utils.toFahrenheit(state.targetTemperature) : Math.round(state.targetTemperature),
 		temperatureUnit: device.temperatureUnit
 	}
 	const swingModes = device.Utils.sensiboFormattedSwingModes(device.capabilities[state.mode], state)

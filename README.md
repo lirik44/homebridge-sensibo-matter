@@ -157,6 +157,7 @@ See below the table for additional details on these settings.
 | `climateReactAutoLowOffset` |  Offset added to the **low** threshold sent to Climate React (a HomeKit range of 23-24 becomes 23.2-24). The high threshold is never offset. Only used when `climateReactAsAutoMode` is enabled  |          |  `0.2` |  Number  |
 | `climateReactAutoTargetTemperature` |  The AC setpoint Climate React commands when it switches the unit on in AUTO. Clamped to what the AC supports. Only used when `climateReactAsAutoMode` is enabled  |          |  `22` |  Integer  |
 | `climateReactAutoFanLevel` |  The fan level Climate React commands when it switches the unit on in AUTO. Falls back to the current fan level if unsupported by the AC. Only used when `climateReactAsAutoMode` is enabled  |          |  `low` |  String  |
+| `climateReactAutoTemperatureStep` |  Step for the HomeKit AUTO range. `0.5` allows ranges like 23.5-24.5, since Climate React thresholds are triggers rather than AC setpoints. Commands sent to the AC are still rounded to a whole degree. Celsius only. Only used when `climateReactAsAutoMode` is enabled  |          |  `1` |  Number  |
 | `climateReactAutoDebounceMs` |  How long to wait after the last change before sending the Climate React update, so dragging the AUTO range results in a single API call. Only used when `climateReactAsAutoMode` is enabled  |          |  `3000` |  Integer  |
 | `enableHistoryStorage`     |  When set to `true`, temperature & humidity measurements will be stored over time, viewable as History in the Eve app  |          |  `false` |   Boolean |
 | `enableOccupancySensor`    |  Adds an occupancy sensor to represent the state of someone at home  |          |  `false` |  Boolean  |
@@ -309,6 +310,15 @@ it on:
 - `climateReactAutoFanLevel` (default `low`) - the fan level commanded on the AC
 
 Both are validated against what your AC actually supports, and fall back to a safe value if not.
+
+##### Finer range steps
+
+By default the AUTO range steps in whole degrees, matching what the AC accepts. Climate React thresholds are
+triggers rather than AC setpoints though, so they can be finer: setting `"climateReactAutoTemperatureStep":
+0.5` lets you pick ranges like 23.5-24.5 in the Home app. Commands sent to the AC itself are still rounded to
+a whole degree, so nothing invalid reaches the API. Celsius only.
+
+Bear in mind that a narrower band means the AC cycles more often.
 
 ##### Example config
 

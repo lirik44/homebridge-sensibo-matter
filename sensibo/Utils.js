@@ -65,7 +65,7 @@ function syncAutoBandPrivate(device, platform, deviceFromSensiboResponse) {
 		return
 	}
 
-	const step = device.usesFahrenheit ? 1.8 : 1
+	const step = device.usesFahrenheit ? 1.8 : (platform.climateReactAutoTemperatureStep ?? 1)
 	const offset = platform.climateReactAutoLowOffset ?? 0.2
 
 	device.autoBand.high = smartMode.highTemperatureThreshold
@@ -849,7 +849,10 @@ export default (device, platform) => {
 			// e.g. CurrentTemperature = "22.60000000000001"
 
 			if (minStep) {
-				const roundedValue = minStep < 1 ? Math.round((newValue + Number.EPSILON) * 10) / 10 : Math.round(newValue + Number.EPSILON)
+				// Round to the actual step, so a minStep of 0.5 snaps to 0.5 rather than to 0.1 or 1.
+				const roundedValue = minStep < 1
+					? Math.round((newValue + Number.EPSILON) / minStep) * minStep
+					: Math.round(newValue + Number.EPSILON)
 
 				if (roundedValue !== newValue) {
 					log.easyDebug(`${device.name} - Utils updateValue - '${newValue}' doesn't meet the rounding required by minStep: ${minStep} for characteristic ${characteristicName} on service ${serviceName}... rounding to ${roundedValue}`)
