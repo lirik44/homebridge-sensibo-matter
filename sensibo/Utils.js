@@ -209,7 +209,11 @@ export default (device, platform) => {
 			// climateReactAsAutoMode: Climate React being enabled IS the HomeKit AUTO mode - that is the
 			// single source of truth. We never push a mode to the AC in AUTO, so acState.mode (whatever
 			// Climate React last set it to) must not be allowed to overwrite the HomeKit tile.
-			const climateReactDrivesAuto = !!(platform.climateReactAsAutoMode && deviceFromSensiboResponse.smartMode?.enabled)
+			// autoBand.pending means our own Climate React update is still in flight. Sensibo can briefly
+			// report smartMode.enabled as false while it rewrites that record, and since "enabled" is what
+			// tells us HomeKit is in AUTO, trusting it mid-write would switch the accessory off and back on.
+			const climateReactUpdatePending = !!device.autoBand?.pending
+			const climateReactDrivesAuto = !!(platform.climateReactAsAutoMode && (deviceFromSensiboResponse.smartMode?.enabled || climateReactUpdatePending))
 
 			if (climateReactDrivesAuto) {
 				syncAutoBandPrivate(device, platform, deviceFromSensiboResponse)
