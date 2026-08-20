@@ -265,13 +265,14 @@ export default (device, platform) => {
 
 			// Send Climate React state command and refresh state
 			if (prop === 'smartMode') {
+				// Build the payload NOW rather than when the debounce fires. A refreshState landing during
+				// the debounce window overwrites state.smartMode with what Sensibo still has stored, so
+				// reading it later would send the previous band back and undo the change being made.
+				const sensiboNewClimateReactState = sensiboFormattedClimateReactState(device, state)
+
 				clearTimeout(climateReactTimer)
 				climateReactTimer = setTimeout(async () => {
 					try {
-						// FIXME: check if sensiboFormattedClimateReactState is still required, could potentially be replaced with:
-						//        const sensiboNewClimateReactState = state.smartMode (or similar)??
-						const sensiboNewClimateReactState = sensiboFormattedClimateReactState(device, state)
-
 						log.easyDebug(`${device.name} - StateHandler smartMode - (debounced ${climateReactDebounceMs}ms) before calling API to set new Climate React`)
 						log.easyDebug(`${device.name} - StateHandler smartMode - payload: ${JSON.stringify(sensiboNewClimateReactState)}`)
 
