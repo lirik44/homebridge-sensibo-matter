@@ -55,6 +55,7 @@ class AirConditioner {
 			this.temperatureStep = platform.climateReactAutoTemperatureStep ?? 1
 		}
 
+		this.climateReactAutoFanLevel = platform.climateReactAutoFanLevel
 		this.climateReactAutoMinTemperature = platform.climateReactAutoMinTemperature
 		this.climateReactAutoMaxTemperature = platform.climateReactAutoMaxTemperature
 

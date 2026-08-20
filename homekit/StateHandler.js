@@ -2,24 +2,37 @@ function sensiboFormattedACState(device, state) {
 	device.log.easyDebug(`${device.name} -> sensiboFormattedACState start`)
 	// device.log.easyDebug(`${device.name} -> sensiboFormattedACState acState: ${JSON.stringify(acState, null, 4)}`)
 
+	// climateReactAsAutoMode: while in AUTO we normally send nothing to the AC, but turning the accessory
+	// off still has to reach it. Never send the AC's native "auto" in that command - it is exactly the mode
+	// this feature exists to avoid (its fan never stops), and it would linger in the AC's state until
+	// Climate React next fires. Send "cool" instead, which is what Climate React itself commands.
+	const drivenByClimateReact = device.climateReactAsAutoMode && state.mode === 'AUTO'
+	const effectiveMode = drivenByClimateReact ? 'COOL' : state.mode
+	const effectiveCapabilities = device.capabilities[effectiveMode] ?? device.capabilities[state.mode]
 	const acState = {
 		on: state.active,
-		mode: state.mode.toLowerCase(),
+		mode: effectiveMode.toLowerCase(),
 		// The AUTO range may use a finer step than the AC supports (Climate React thresholds are triggers,
 		// not setpoints), so round back to a whole degree here - Sensibo rejects fractional setpoints with 400.
 		targetTemperature: device.usesFahrenheit ? device.Utils.toFahrenheit(state.targetTemperature) : Math.round(state.targetTemperature),
 		temperatureUnit: device.temperatureUnit
 	}
-	const swingModes = device.Utils.sensiboFormattedSwingModes(device.capabilities[state.mode], state)
+	const swingModes = device.Utils.sensiboFormattedSwingModes(effectiveCapabilities, state)
 
 	// be mindful .assign() copies references (not a deep clone): https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign#examples
 	Object.assign(acState, swingModes)
 
-	if ('fanSpeeds' in device.capabilities[state.mode]) {
-		acState.fanLevel = device.Utils.percentToFanLevel(state.fanSpeed, device.capabilities[state.mode].fanSpeeds)
+	if ('fanSpeeds' in effectiveCapabilities) {
+		// In AUTO, keep the fan level consistent with what Climate React commands, so the AC's stored state
+		// doesn't end up on "auto" (which is what the native AUTO mode uses).
+		const autoModeFanLevel = device.climateReactAutoFanLevel ?? 'low'
+
+		acState.fanLevel = drivenByClimateReact && effectiveCapabilities.fanSpeeds.includes(autoModeFanLevel)
+			? autoModeFanLevel
+			: device.Utils.percentToFanLevel(state.fanSpeed, effectiveCapabilities.fanSpeeds)
 	}
 
-	if ('light' in device.capabilities[state.mode]) {
+	if ('light' in effectiveCapabilities) {
 		acState.light = state.light ? 'on' : 'off'
 	}
 
