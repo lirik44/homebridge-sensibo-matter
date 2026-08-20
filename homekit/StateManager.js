@@ -225,6 +225,10 @@ function updateClimateReactAutoMode(device) {
 
 	log.easyDebug(`${device.name} - climateReactAsAutoMode - AUTO band: HomeKit [${low}, ${high}] -> Climate React [${lowThreshold}, ${high}], AC setpoint when running: ${acTargetTemperature}`)
 
+	// Mark the update as in flight, so a refresh landing while Sensibo rewrites the Climate React record
+	// doesn't mistake a transient "enabled: false" for the user leaving AUTO. Cleared once the POST lands.
+	device.autoBand.pending = true
+
 	// Assigning the whole object is what triggers StateHandler's setter (and the API call).
 	device.state.smartMode = smartModeState
 }
