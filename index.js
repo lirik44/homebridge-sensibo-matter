@@ -1,4 +1,5 @@
 import path from 'path'
+import MatterBridge from './matter/MatterBridge.js'
 import migrateLegacyPersist from './sensibo/persistMigration.js'
 import refreshState from './sensibo/refreshState.js'
 import SensiboApi from './sensibo/SensiboAPI.js'
@@ -92,6 +93,16 @@ class SensiboACPlatform {
 		this.ignoreHomeKitDevices = config['ignoreHomeKitDevices'] || false
 		this.syncButtonInAccessory = config['syncButtonInAccessory'] || false
 		this.externalHumiditySensor = config['externalHumiditySensor'] || false
+		// Matter (Homebridge v2 and above). Homebridge only exposes its Matter API on a bridge that has
+		// Matter switched on, so that setting is the real opt-in - this one turns the plugin's half off
+		// without disabling Matter for the whole bridge. Nothing here changes the HAP side.
+		this.enableMatter = config['enableMatter'] !== false
+		// 'RoomAirConditioner' is the semantically correct Matter type and keeps on/off separate from the
+		// mode; 'Thermostat' is recognised by more ecosystems but has no on/off of its own.
+		this.matterAirConditionerDeviceType = config['matterAirConditionerDeviceType'] || 'RoomAirConditioner'
+		// Off by default: a FanControl cluster on a thermostat endpoint is the part controllers disagree
+		// about most, and the fan speed is not why most people bridge an AC to another ecosystem.
+		this.matterExposeFanSpeed = config['matterExposeFanSpeed'] || false
 		this.locationsToInclude = config['locationsToInclude'] || []
 
 		this.modesToExclude = config['modesToExclude']?.map(mode => {
@@ -153,6 +164,12 @@ class SensiboACPlatform {
 				}))
 				// console.trace('tracing')
 			}
+		}
+
+		this.matterBridge = new MatterBridge(this)
+
+		if (this.matterBridge.available) {
+			this.log.info(`Matter is enabled on this bridge, ${this.enableMatter ? 'accessories will also be published over Matter' : 'but enableMatter is off - publishing to HomeKit only'}.`)
 		}
 
 		this.api.on('didFinishLaunching', async () => {
@@ -221,6 +238,12 @@ class SensiboACPlatform {
 
 	configureAccessory(accessory) {
 		this.cachedAccessories.push(accessory)
+	}
+
+	// The Matter equivalent of configureAccessory: Homebridge calls this for each Matter accessory it
+	// restored from its own cache, so accessories that no longer exist can be unregistered.
+	configureMatterAccessory(accessory) {
+		this.matterBridge?.configureCached(accessory)
 	}
 
 }

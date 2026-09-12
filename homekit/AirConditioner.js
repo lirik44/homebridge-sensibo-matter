@@ -630,6 +630,10 @@ class AirConditioner {
 	}
 
 	updateHomeKit() {
+		// Matter is derived from the same device state, independently of the HomeKit characteristics, so
+		// it is pushed here rather than at the end - updateHomeKit() returns early further down.
+		this.matter?.update()
+
 		// log new state with FakeGato
 		if (this.loggingService) {
 			this.log.easyDebug(`${this.name} - Making FakeGato log entry`)

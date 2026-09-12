@@ -43,6 +43,7 @@ Check with: `node -v` & `homebridge -V` and update if needed
 - **Climate React** - enable/disable Climate React (Smart mode). To adjust the settings, use the Sensibo app or turn on `Climate React Auto Setup`
 - **Climate React as the AUTO mode** *(this fork)* - the HomeKit AUTO mode is driven by Climate React, so the AC switches fully off between cycles instead of running its fan continuously. The AUTO temperature range sets the Climate React thresholds
 - **Occupancy Sensor** - show the Home/Away status from Sensibo in the Home app via Occupancy sensor
+- **Matter** *(this fork)* - also publish your AC over Matter, so the same device can be paired with Aqara, Alice, SmartThings, Alexa and other ecosystems alongside Apple Home. Requires Homebridge v2
 - **History Storage** - store temperature and humidity measurements over time, review them in the Eve app as a graph
 
 Depending on your AC device and which remote code you've setup in the Sensibo app you may also have access to:
@@ -147,6 +148,9 @@ See below the table for additional details on these settings.
 | ~~`disableFan`~~           |  ***Deprecated - use modesToExclude*** When set to `true`, will remove the FAN accessory  |          |  `false` |  Boolean |
 | `disableHumidity`          |  When set to `true`, will remove Current Relative Humidity readings from the (AC) accessory. Humidity will still be shown if you have Dry mode enabled for the accessory  |          |  `false` |  Boolean |
 | `externalHumiditySensor`   |  Creates a separate Humidity sensor accessory, ignores the `disableHumidity` setting  |          |  `false` |  Boolean |
+| `enableMatter`             |  Also publish accessories over Matter. Only has any effect on Homebridge v2 with Matter enabled for the bridge  |          |  `true`  |  Boolean |
+| `matterAirConditionerDeviceType` |  How the AC is presented over Matter: `RoomAirConditioner` or `Thermostat`  |          |  `RoomAirConditioner` |  String  |
+| `matterExposeFanSpeed`     |  Add a fan speed control to the Matter accessory                 |          |  `false` |  Boolean |
 | `disableLightSwitch`       |  When set to `true`, will remove the light switch        |          |  `false` |  Boolean |
 | `disableHorizontalSwing`   |  When set to `true`, will remove the horizontal swing switch     |          |  `false` |  Boolean |
 | `disableVerticalSwing`     |  When set to `true`, will remove the vertical swing control (Oscillate) from the accessory  |          |  `false` |  Boolean |
@@ -426,6 +430,50 @@ Enabling this feature will store measurements of temperature, humidity and TVOCs
 
 To enable the **History storage** feature, add `"enableHistoryStorage": true` to your config.
 
+### Matter
+
+Homebridge v2 can publish accessories over **Matter** as well as HomeKit, which lets the same Sensibo
+device be paired with another ecosystem - Aqara, Yandex Alice, SmartThings, SwitchBot, Alexa - without a
+second bridge or a second Sensibo integration.
+
+The two transports are independent: HomeKit keeps working exactly as before, and pairing the Matter side
+with another ecosystem does not affect it. Both are driven by the same state inside the plugin, so a change
+made anywhere shows up everywhere within a polling cycle.
+
+**Setting it up**
+
+1. Run Homebridge v2 or later and enable Matter for the bridge (or for this plugin's child bridge) in the
+   Homebridge UI. Homebridge only exposes its Matter API to plugins when this is on.
+2. That's the only opt-in needed - the plugin publishes over Matter automatically. Add
+   `"enableMatter": false` to your config to keep it HomeKit-only.
+3. Pair the Homebridge Matter bridge with the other ecosystem using the pairing code the Homebridge UI shows.
+
+**What is published**
+
+- The **air conditioner**, with power, mode and target temperature. Only the modes you actually have enabled
+  are commandable - anything in `modesToExclude` is rejected if another ecosystem asks for it.
+- The **humidity sensor**, when `externalHumiditySensor` is enabled. A Matter thermostat carries no humidity
+  of its own, so this is the only way room humidity reaches the other ecosystem - turn it on if you want it
+  there.
+
+With `climateReactAsAutoMode` enabled, the Matter AUTO mode is a **temperature range**, exactly as it is in
+the Home app: the lower edge and upper edge are the Climate React thresholds, and `climateReactAutoMinTemperature`
+/ `climateReactAutoMaxTemperature` narrow the slider in the same way.
+
+**Options**
+
+- `matterAirConditionerDeviceType` - `RoomAirConditioner` (default) is the correct Matter type for an AC and
+  keeps power separate from the mode. `Thermostat` is understood by more ecosystems, but has no separate
+  on/off (off is a mode) and no fan. Switch to it if your ecosystem does not recognise the accessory.
+- `matterExposeFanSpeed` - adds a fan speed control, off by default. Support for a fan on a thermostat
+  endpoint is where ecosystems disagree most, so turn it on only if you need it.
+
+**Not published over Matter (yet)**
+
+The air quality sensor, occupancy sensor, Sensibo room sensors, the Sensibo Pure air purifier, and the
+Climate React / light / horizontal swing / sync switches are HomeKit-only for now. They are unaffected and
+continue to work there.
+
 ## Changes in this fork
 
 All changes are additive and opt-in - with `climateReactAsAutoMode` left off, the plugin behaves exactly like
@@ -441,6 +489,10 @@ upstream.
 - **Debounced Climate React updates** (`climateReactAutoDebounceMs`, default `3000`) - dragging the AUTO range
   fires several HomeKit updates in quick succession; they are coalesced into a single API call, which avoids
   Sensibo's rate limiting (HTTP 429).
+- **Matter support** (`enableMatter`, `matterAirConditionerDeviceType`, `matterExposeFanSpeed`) - see
+  [the section above](#matter). Publishes the AC and the standalone humidity sensor over Matter on
+  Homebridge v2, alongside HomeKit. Commands from either transport go through the same code path, so the
+  Climate React AUTO behaviour is identical in both. Does nothing on Homebridge v1.
 - **Accurate cooling/idle indication in AUTO** - the accessory reports `COOLING` only while the unit is
   actually running and `IDLE` while Climate React is waiting for the room to warm back up, instead of always
   reporting that it is cooling.

@@ -243,6 +243,17 @@ export default (device, platform) => {
 
 	return {
 
+		// The Climate React logic above, exposed so another transport (Matter) can reuse it rather than
+		// reimplement it - both have to derive the same smartMode from the same device state.
+		helpers: {
+			updateClimateReact: () => {
+				return updateClimateReact(device, enableClimateReactAutoSetup)
+			},
+			updateClimateReactAutoMode: () => {
+				return updateClimateReactAutoMode(device)
+			}
+		},
+
 		get: {
 			// AC (Auto, Cool, Heat only)
 			// TODO: refactor this similar to PureActive below?

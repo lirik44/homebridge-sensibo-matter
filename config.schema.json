@@ -122,6 +122,41 @@
 				"default": false,
 				"required": false
 			},
+			"enableMatter": {
+				"title": "Publish to Matter",
+				"description": "Also publish accessories over Matter, so they can be paired with other ecosystems (Aqara, Alice, SmartThings, Alexa...). Requires Homebridge v2 with Matter enabled for this bridge - this option does nothing otherwise. HomeKit is unaffected either way.",
+				"type": "boolean",
+				"default": true,
+				"required": false
+			},
+			"matterAirConditionerDeviceType": {
+				"title": "Matter: air conditioner device type",
+				"description": "How the AC is presented over Matter. Room Air Conditioner is the correct type and keeps power separate from the mode; Thermostat is understood by more ecosystems but has no separate on/off (off is a mode) and no fan. Default Room Air Conditioner.",
+				"type": "string",
+				"default": "RoomAirConditioner",
+				"oneOf": [
+					{
+						"title": "Room Air Conditioner",
+						"enum": [
+							"RoomAirConditioner"
+						]
+					},
+					{
+						"title": "Thermostat",
+						"enum": [
+							"Thermostat"
+						]
+					}
+				],
+				"required": false
+			},
+			"matterExposeFanSpeed": {
+				"title": "Matter: expose fan speed",
+				"description": "Add a fan speed control to the Matter accessory. Off by default - support for a fan on a thermostat endpoint varies the most between ecosystems.",
+				"type": "boolean",
+				"default": false,
+				"required": false
+			},
 			"disableLightSwitch": {
 				"title": "Disable Light Switch",
 				"description": "Remove light switch",
