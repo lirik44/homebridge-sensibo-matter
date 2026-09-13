@@ -346,21 +346,60 @@ class MatterAirConditioner {
 		return clusters
 	}
 
+	/**
+	 * Whether an incoming write is this accessory's own state update coming back at it.
+	 *
+	 * Homebridge runs a plugin's command handlers for every attribute change, including the ones the
+	 * plugin itself pushed through updateAccessoryState: its behaviors react with `offline: true` and
+	 * never look at whether a controller was behind the write. So "the setpoint is now 22" arrives as
+	 * "set the setpoint to 22" - and since applying a setpoint switches the unit on, turning the AC
+	 * off while Climate React held a band switched it straight back on in COOL. There is nothing to do
+	 * for a value we just published anyway: the device is already in that state.
+	 *
+	 * @param    {string}   cluster  The Matter cluster the write landed on
+	 * @param    {string}   key      The attribute written
+	 * @param    {*}        value    The value written
+	 * @returns  {boolean}           True when this is our own update and should be ignored
+	 */
+	isOwnUpdate(cluster, key, value) {
+		const pushed = this.pushed?.[cluster]
+
+		if (!pushed || !(key in pushed) || pushed[key] !== value) {
+			return false
+		}
+
+		this.log.easyDebug(`${this.name} - Matter - ignoring ${key}=${value}, it is our own update coming back`)
+
+		return true
+	}
+
 	buildHandlers() {
 		const handlers = { thermostat: {} }
 
 		handlers.thermostat.systemModeChange = args => {
+			if (this.isOwnUpdate('thermostat', 'systemMode', args.systemMode)) {
+				return
+			}
+
 			return this.onSystemMode(args.systemMode)
 		}
 
 		if (this.features.includes('Heating')) {
 			handlers.thermostat.occupiedHeatingSetpointChange = args => {
+				if (this.isOwnUpdate('thermostat', 'occupiedHeatingSetpoint', args.occupiedHeatingSetpoint)) {
+					return
+				}
+
 				return this.onSetpoint('heating', args.occupiedHeatingSetpoint)
 			}
 		}
 
 		if (this.features.includes('Cooling')) {
 			handlers.thermostat.occupiedCoolingSetpointChange = args => {
+				if (this.isOwnUpdate('thermostat', 'occupiedCoolingSetpoint', args.occupiedCoolingSetpoint)) {
+					return
+				}
+
 				return this.onSetpoint('cooling', args.occupiedCoolingSetpoint)
 			}
 		}
@@ -379,9 +418,17 @@ class MatterAirConditioner {
 		if (this.useFanControl) {
 			handlers.fanControl = {
 				fanModeChange: args => {
+					if (this.isOwnUpdate('fanControl', 'fanMode', args.fanMode)) {
+						return
+					}
+
 					return this.onFanMode(args.fanMode)
 				},
 				percentSettingChange: args => {
+					if (this.isOwnUpdate('fanControl', 'percentSetting', args.percentSetting)) {
+						return
+					}
+
 					return this.onFanSpeed(args.percentSetting)
 				}
 			}
