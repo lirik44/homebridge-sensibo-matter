@@ -7,7 +7,7 @@
     "platformName": "SensiboAC"
   },
   "description": "Homebridge plugin for Sensibo - Smart AC Control",
-  "license": "GNU",
+  "license": "GPL-3.0",
   "exports": "./index.js",
   "type": "module",
   "keywords": [
@@ -47,24 +47,11 @@
     "node": "^22.10.0 || ^24.0.0"
   },
   "bugs": {
-    "url": "https://github.com/nitaybz/homebridge-sensibo-ac/issues"
+    "url": "https://github.com/lirik44/homebridge-sensibo-ac/issues"
   },
-  "funding": [
-    {
-      "type": "paypal",
-      "url": "https://paypal.me/nitaybz"
-    },
-    {
-      "type": "patreon",
-      "url": "https://www.patreon.com/nitaybz"
-    },
-    {
-      "type": "kofi",
-      "url": "https://ko-fi.com/nitaybz"
-    }
-  ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/nitaybz/homebridge-sensibo-ac.git"
-  }
+    "url": "git+https://github.com/lirik44/homebridge-sensibo-ac.git"
+  },
+  "homepage": "https://github.com/lirik44/homebridge-sensibo-ac#readme"
 }

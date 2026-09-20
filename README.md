@@ -1,20 +1,43 @@
-# homebridge-sensibo-ac
+<h1 align="center">Homebridge Sensibo — Matter fork</h1>
 
-<img src="branding/sensibo_homebridge.png" width="500" alt="Sensibo and Homebridge logos" />
+<p align="center">
+    <img src="branding/sensibo_homebridge.png" width="500" alt="Sensibo and Homebridge logos" />
+</p>
 
-[![Downloads](https://img.shields.io/npm/dt/homebridge-sensibo-ac.svg?color=critical)](https://www.npmjs.com/package/homebridge-sensibo-ac) [![Version](https://img.shields.io/npm/v/homebridge-sensibo-ac)](https://www.npmjs.com/package/homebridge-sensibo-ac)
+<p align="center">
+    <a href="https://www.npmjs.com/package/homebridge">
+        <img src="https://img.shields.io/badge/powered%20by-homebridge-blue" alt="powered by homebridge">
+    </a>
+    <a href="https://sensibo.github.io/">
+        <img src="https://img.shields.io/badge/powered%20by-sensibo%20api-blue" alt="powered by the Sensibo API">
+    </a>
+    <a href="#climate-react-as-the-auto-mode">
+        <img src="https://img.shields.io/badge/climate%20react-as%20AUTO-brightgreen" alt="Climate React as the AUTO mode">
+    </a>
+    <a href="LICENSE">
+        <img src="https://img.shields.io/badge/license-GPL--3.0-lightgrey" alt="license GPL-3.0">
+    </a>
+</p>
 
-[![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins) [![Homebridge Discord](https://img.shields.io/discord/432663330281226270?color=728ED5&logo=discord&label=discord)](https://discord.gg/yguuVAX)
-
-[![certified-hoobs-plugin](https://badgen.net/badge/HOOBS/Certified/yellow)](https://plugins.hoobs.org?ref=10876) [![hoobs-support](https://badgen.net/badge/HOOBS/Support/yellow)](https://support.hoobs.org?ref=10876)
+---
 
 [Homebridge](https://github.com/homebridge/homebridge) plugin for [Sensibo](https://sensibo.com/) - Smart AC Controller and Air Purifier
 
 > **This is a fork of [nitaybz/homebridge-sensibo-ac](https://github.com/nitaybz/homebridge-sensibo-ac).**
+> Everything that plugin does, this one does. Two things are added on top.
 >
-> It adds one feature on top of upstream: **[Climate React as the AUTO mode](#climate-react-as-the-auto-mode)** - the HomeKit AUTO
-> mode is backed by Climate React instead of the AC's native AUTO, so the unit (and its fan) actually switches
-> off between cooling cycles. Everything else behaves exactly like upstream. See [Changes in this fork](#changes-in-this-fork).
+> **[Climate React as the AUTO mode](#climate-react-as-the-auto-mode)** — the HomeKit AUTO mode is backed by
+> Climate React instead of the AC's native AUTO, so the unit (and its fan) actually switches off between
+> cooling cycles rather than running on indefinitely. The AUTO temperature range sets the Climate React
+> thresholds.
+>
+> **Matter**, alongside HomeKit rather than instead of it, so the same air conditioner and its humidity
+> sensor reach Alexa, SmartThings and Aqara. Both halves drive the same accessory state, and a command
+> carrying the value this plugin has just reported is ignored — that is a controller keeping its own
+> attributes in step, not a person changing anything, and obeying it had the two ecosystems talking each
+> to each other in circles.
+>
+> See [Changes in this fork](#changes-in-this-fork).
 
 <img src="branding/products.jpg" width="500" alt="Sensibo products" />
 
@@ -479,6 +502,9 @@ continue to work there.
 All changes are additive and opt-in - with `climateReactAsAutoMode` left off, the plugin behaves exactly like
 upstream.
 
+- **Matter** - the air conditioner and its humidity sensor published over Matter as well as HomeKit,
+  wherever the Homebridge bridge running this plugin has Matter enabled. Both halves drive the same
+  accessory state, and a command carrying the value this plugin has just reported is ignored.
 - **Climate React as the AUTO mode** (`climateReactAsAutoMode`) - see
   [the section above](#climate-react-as-the-auto-mode).
 - **Configurable low-threshold offset** (`climateReactAutoLowOffset`, default `0.2`) - applied only to the
@@ -524,8 +550,13 @@ Great thanks to Sensibo company and especially Omer Enbar, their CEO & CO-Founde
 
 ## Support homebridge-sensibo-ac
 
-**homebridge-sensibo-ac** is a free plugin under the GNU license. It was originally developed as a contribution to the Homebridge/HOOBS community with lots of love and thoughts by [nitaybz](https://github.com/nitaybz). Now maintained by volunteers.
+**homebridge-sensibo-ac** is a free plugin under the GNU license. It was originally developed as a
+contribution to the Homebridge/HOOBS community with lots of love and thoughts by
+[nitaybz](https://github.com/nitaybz), and is maintained by volunteers.
 
-Creating and maintaining Homebridge plugins takes time and effort, if you would like to share your appreciation, feel free to "Star" or donate.
+If you would like to support the original author, the ways to do so are on
+[his repository](https://github.com/nitaybz/homebridge-sensibo-ac).
 
-[![Downloads](https://img.shields.io/badge/PayPal-Donate%20to%20nitaybz-blue.svg?logo=paypal)](https://www.paypal.me/nitaybz) [![Downloads](https://img.shields.io/badge/Ko--Fi-Buy%20nitaybz%20a%20coffee-29abe0.svg?logo=ko-fi)](https://ko-fi.com/nitaybz)
+## License
+
+GPL-3.0, same as the upstream project.
